@@ -1,6 +1,7 @@
 package main;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
@@ -60,37 +61,34 @@ public class App {
 	private static void chegou(List<Fila> filas, List<Pessoa> pessoas, String comando) {
 		var nomes = comando.replace("chegou: ","").split(" ");
 		for(String nome : nomes) {
-			var pessoa = localizarPessoaPeloNome(pessoas, nome).orElse(null);
-			var menorFila = encontrarMenorFila(filas);
-			if(pessoa != null) {
-				var adicionou = adicionarAFila(pessoa, menorFila);
-				if(adicionou) continue;
-			}
-			pessoa = gerarPessoa(pessoas, nome);
-			menorFila.adicionarPessoa(pessoa);
+			entrarNaMelhorPosicaoDasFilas(filas, pessoas, nome);
 		}
 	}
 
-	private static boolean adicionarAFila(Pessoa pessoa, Fila menorFila) {
-		if(pessoa.getGrupoPertencente() != null) {
-			var conhecidoNaFila = obterFilaDoConhecido(pessoa);
-			if (conhecidoNaFila == null) {
-				menorFila.adicionarPessoa(pessoa);
-				return true;
-			}
-			if(conhecidoNaFila.getMinhaPosicao() + 1 >= menorFila.getFila().size()) {
-				menorFila.adicionarPessoa(pessoa);
-				return true;
-			} else {
-				conhecidoNaFila.getFilaAtual().adicionarPessoaComConhecido(pessoa, conhecidoNaFila);
-				return true;
+	private static void entrarNaMelhorPosicaoDasFilas(List<Fila> filas, List<Pessoa> pessoas, String nome) {
+		var pessoa = localizarPessoaPeloNome(pessoas, nome).orElse(null);
+		var menorFila = encontrarMenorFila(filas);
+		if(pessoa != null) {
+			if(pessoa.getGrupoPertencente() != null) {
+				var filaDoConhecido = obterFilaDoConhecidoComMelhorPosicao(pessoa);
+				if (Objects.isNull(filaDoConhecido)) {
+					menorFila.adicionarPessoa(pessoa);
+					return;
+				} else if(filaDoConhecido.getMinhaPosicao() + 1 >= menorFila.getFila().size()) {
+					menorFila.adicionarPessoa(pessoa);
+					return;
+				} else {
+					filaDoConhecido.getFilaAtual().adicionarPessoaComConhecido(pessoa, filaDoConhecido);
+					return;
+				}
 			}
 		}
-		return false;
+		pessoa = gerarPessoa(pessoas, nome);
+		menorFila.adicionarPessoa(pessoa);
 	}
 
-	private static Pessoa obterFilaDoConhecido(Pessoa pessoa) {
-		var conhecidosEmFilas = pessoa.getGrupoPertencente().stream().filter(conhecido -> conhecido.getFilaAtual() != null).collect(Collectors.toList());
+	private static Pessoa obterFilaDoConhecidoComMelhorPosicao(Pessoa pessoa) {
+		var conhecidosEmFilas = pessoa.getGrupoPertencente().stream().filter(conhecido -> !Objects.isNull(conhecido.getFilaAtual())).collect(Collectors.toList());
 		
 		var conhecidoComMenorPosicaoNaFila = conhecidosEmFilas.stream().min((conhecido1, conhecido2) -> Integer.compare(conhecido1.getMinhaPosicao(), conhecido2.getMinhaPosicao()));
 		
