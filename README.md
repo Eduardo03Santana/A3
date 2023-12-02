@@ -42,7 +42,7 @@ O metodo desiste, localiza a pessoa indicada, e remove ela da sua fila;
 
 ##### App.java
 ###### void gerarGrupo(Pessoas pessoas, String comando):
-    Primeiro o comando é dividio, é os nomes das pessoas são separadas em um array;
+    Primeiro o comando é dividio, e os nomes das pessoas são separadas em um array;
     Em seguida é criado o grupo;
     Com o grupo criado é realizado um for each, no qual são percorridos todos os nomes, e para cada nome é criado um objeto do tipo Pessoa com a função Utils.gerarPessoa, e esta pessoa é passada como parametro ao metodo do grupo adicionarPessoa, que adiona esta pessoa ao grupo, e adiciona uma referencia do grupo ao atributo GrupoPertencente desta pessoa;
     
